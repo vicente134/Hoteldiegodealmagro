@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+  <h1>¡Bienvenido al Dashboard, {{ user.nombre_completo }}!</h1>
+  <p>Tu rol en el sistema es: <strong>{{ user.rol }}</strong>.</p>
+
+  <hr>
+
+  <h3>Accesos Rápidos</h3>
+  
+  <div class="list-group">
+    <a href="#" class="list-group-item list-group-item-action">Ver Reservas</a>
+    <a href="#" class="list-group-item list-group-item-action">Ver Clientes</a>
+
+    {% if user.rol == 'gerente' or user.rol == 'administrador' %}
+      <a href="#" class="list-group-item list-group-item-action list-group-item-info">
+        Generar Reportes (Solo Gerencia/Admin)
+      </a>
+    {% endif %}
+
+    {% if user.rol == 'administrador' %}
+      <a href="#" class="list-group-item list-group-item-action list-group-item-danger">
+        Ver Auditoría (Solo Admin)
+      </a>
+    {% endif %}
+  </div>
+
+{% endblock %}
