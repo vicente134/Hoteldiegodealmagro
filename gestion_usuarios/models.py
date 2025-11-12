@@ -1,7 +1,6 @@
 # gestion_usuarios/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-# Importamos la función para "hashear" (encriptar) la contraseña
 from django.contrib.auth.hashers import make_password
 
 # --- Manager para que Django sepa crear usuarios con tu modelo ---
@@ -19,8 +18,9 @@ class UsuarioManager(BaseUserManager):
             nombre_completo=nombre_completo,
             **extra_fields
         )
-        # Usamos contrasena (el nombre del campo de la BDD)
-        user.set_password(contrasena)
+        # Hasheamos la contraseña usando el método del modelo
+        if contrasena:
+            user.set_password(contrasena)
         user.save(using=self._db)
         return user
 
@@ -93,11 +93,12 @@ class Usuarios(AbstractBaseUser, PermissionsMixin):
     def password(self):
         return self.contrasena
 
-    @password.setter
-    def password(self, raw_password):
-        # --- ¡ESTE ES EL ARREGLO! ---
-        # En lugar de llamar a self.set_password (el bucle),
-        # hasheamos la clave y la guardamos en 'contrasena' DIRECTAMENTE.
+    # Overriding set_password to ensure the hashed value is stored in 'contrasena'
+    def set_password(self, raw_password):
+        """
+        Hashea la contraseña y la guarda en el campo 'contrasena'.
+        Esto evita doble-hashing si Django llama a set_password desde su propio flujo.
+        """
         self.contrasena = make_password(raw_password)
 
     @property

@@ -17,22 +17,23 @@ Including another URLconf
 # hotel_project/urls.py
 from django.contrib import admin
 from django.urls import path, include
+from gestion_usuarios import views as usuarios_views
 from django.contrib.auth import views as auth_views # Vistas de Login de Django
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
-    # Usamos las vistas de login y logout que Django ya trae
-    path('login/', auth_views.LoginView.as_view(
-        template_name='login.html',
-        redirect_authenticated_user=True # Si ya está logueado, lo manda al dashboard
-    ), name='login'),
-    
+
+    # Ruta de login personalizada (usamos la vista de la app para mensajes)
+    path('login/', usuarios_views.login_view, name='login'),
+
+    # Logout usando la vista incorporada
     path('logout/', auth_views.LogoutView.as_view(
-        next_page='login' # Cuando cierra sesión, lo manda al login
+        next_page='login'
     ), name='logout'),
-    
+
     # Incluimos las URLs de nuestra app de usuarios
-    # La ruta vacía '' (homepage) será manejada por esta app
-    path('', include('gestion_usuarios.urls')), 
+    path('', include('gestion_usuarios.urls')),
+    # Rutas para gestión de reservas (habitaciones, clientes, reservas)
+    path('reservas/', include('gestion_reservas.urls')),
+    path('servicios/', include('gestion_servicios.urls')),
 ]

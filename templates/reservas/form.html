@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Formulario Reserva{% endblock %}
+
+{% block content %}
+  <h1>{% if object %}Editar{% else %}Crear{% endif %} Reserva</h1>
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="id_rut_cliente" class="form-label">Buscar cliente por RUT</label>
+      <input list="ruts" name="rut_cliente" id="id_rut_cliente" class="form-control" value="{{ form.rut_cliente.value|default_if_none:'' }}">
+      <datalist id="ruts">
+        {% for r in clientes_ruts %}
+          <option value="{{ r }}"></option>
+        {% endfor %}
+      </datalist>
+      <div class="form-text">Si el RUT coincide con un cliente existente será asignado automáticamente.</div>
+    </div>
+
+    {{ form.id_cliente }}
+
+    <div class="mb-3">
+      <label for="id_fecha_checkin" class="form-label">Fecha check-in</label>
+      {{ form.fecha_checkin }}
+    </div>
+
+    <div class="mb-3">
+      <label for="id_fecha_checkout" class="form-label">Fecha check-out</label>
+      {{ form.fecha_checkout }}
+    </div>
+
+    <div class="mb-3">
+      <label for="id_cantidad_personas" class="form-label">Cantidad de personas</label>
+      {{ form.cantidad_personas }}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Habitaciones</label>
+      {{ form.habitaciones }}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Servicios (opcional)</label>
+      {{ form.servicios }}
+    </div>
+
+    <div class="mb-3">
+      <label for="id_comentarios" class="form-label">Comentarios</label>
+      {{ form.comentarios }}
+    </div>
+
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <a href="{% url 'reservas_list' %}" class="btn btn-secondary">Volver</a>
+  </form>
+{% endblock %}

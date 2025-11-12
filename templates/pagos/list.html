@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Pagos{% endblock %}
+
+{% block content %}
+  <h1>Pagos</h1>
+  <a href="{% url 'pagos_create' %}" class="btn btn-primary mb-3">Registrar pago</a>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Reserva</th>
+        <th>Monto</th>
+        <th>Método</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in pagos %}
+        <tr>
+          <td>{{ p.id_pago }}</td>
+          <td>{{ p.id_reserva.codigo_reserva }}</td>
+          <td>{{ p.monto }}</td>
+          <td>{{ p.metodo_pago }}</td>
+          <td>{{ p.estado_pago }}</td>
+          <td>
+            <a href="{% url 'pagos_update' p.pk %}" class="btn btn-sm btn-secondary">Editar</a>
+            <a href="{% url 'pagos_delete' p.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">No hay pagos aún.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

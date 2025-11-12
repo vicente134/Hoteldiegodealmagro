@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.hashers import make_password
 
 # --- Manager para que Django sepa crear usuarios con tu modelo ---
 class UsuarioManager(BaseUserManager):
@@ -16,7 +17,9 @@ class UsuarioManager(BaseUserManager):
             nombre_completo=nombre_completo,
             **extra_fields
         )
-        user.set_password(contrasena)
+        # Usamos make_password para evitar recurrencia con set_password
+        if contrasena:
+            user.contrasena = make_password(contrasena)
         user.save(using=self._db)
         return user
 
@@ -25,21 +28,23 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         # Seteamos 'activo' a 1 (True)
-        extra_fields.setdefault('activo', 1) 
+        extra_fields.setdefault('activo', 1)
 
         if extra_fields.get('rol') != 'administrador':
             raise ValueError('Superuser debe tener el rol de "administrador".')
 
         return self.create_user(nombre_usuario, correo, nombre_completo, contrasena, **extra_fields)
 
-# --- Tu modelo 'Usuarios' adaptado ---
+
+# --- Tu modelo 'Usuarios' adaptado (archivo viejo) ---
+# Este archivo es la versión vieja. Se corrige el setter de password para evitar recursión.
 class Usuarios(AbstractBaseUser, PermissionsMixin):
     id_usuario = models.AutoField(primary_key=True)
     nombre_usuario = models.CharField(unique=True, max_length=60)
     nombre_completo = models.CharField(max_length=120, blank=True, null=True)
     correo = models.CharField(unique=True, max_length=150, blank=True, null=True)
     contrasena = models.CharField(max_length=255) # Django usará esto para el hash
-    
+
     # --- RBAC (Roles) ---
     ROL_CHOICES = [
         ('administrador', 'Administrador'),
@@ -49,15 +54,15 @@ class Usuarios(AbstractBaseUser, PermissionsMixin):
     ]
     # Usamos los 'choices' del SQL original, ya que max_length=13 coincide
     rol = models.CharField(max_length=13, choices=ROL_CHOICES, default='recepcionista')
-    
+
     ultimo_acceso = models.DateTimeField(blank=True, null=True)
     # Convertimos el 'activo = models.IntegerField()' a un BooleanField
-    activo = models.BooleanField(default=True) 
+    activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True) # Django maneja la fecha
 
     # --- Campos requeridos por Django Auth ---
     is_staff = models.BooleanField(default=False) # Permite acceso al Admin
-    
+
     # Hacemos que 'is_active' de Django use tu campo 'activo'
     @property
     def is_active(self):
@@ -83,7 +88,8 @@ class Usuarios(AbstractBaseUser, PermissionsMixin):
 
     @password.setter
     def password(self, raw_password):
-        self.set_password(raw_password)
+        # Usar make_password para generar el hash y asignarlo directamente
+        self.contrasena = make_password(raw_password)
 
     @property
     def last_login(self):

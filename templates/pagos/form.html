@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Pago{% endblock %}
+
+{% block content %}
+  <h1>{% if object %}Editar{% else %}Registrar{% endif %} Pago</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <a href="{% url 'pagos_list' %}" class="btn btn-secondary">Volver</a>
+  </form>
+{% endblock %}

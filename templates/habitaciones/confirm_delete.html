@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Habitación{% endblock %}
+
+{% block content %}
+  <h1>Eliminar Habitación</h1>
+  <p>¿Estás seguro que deseas eliminar la habitación <strong>{{ object.numero }}</strong>?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Eliminar</button>
+    <a href="{% url 'habitaciones_list' %}" class="btn btn-secondary">Cancelar</a>
+  </form>
+{% endblock %}

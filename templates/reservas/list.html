@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservas{% endblock %}
+
+{% block content %}
+  <h1>Reservas</h1>
+  <a href="{% url 'reservas_create' %}" class="btn btn-primary mb-3">Crear reserva</a>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Cliente</th>
+        <th>Usuario</th>
+        <th>Check-in</th>
+        <th>Check-out</th>
+        <th>Estado</th>
+        <th>Total</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reservas %}
+        <tr>
+          <td>{{ r.codigo_reserva }}</td>
+          <td>{{ r.id_cliente.nombre }}</td>
+          <td>{{ r.id_usuario.nombre_usuario }}</td>
+          <td>{{ r.fecha_checkin }}</td>
+          <td>{{ r.fecha_checkout }}</td>
+          <td>{{ r.estado }}</td>
+          <td>{{ r.total_estimado }}</td>
+          <td>
+            <a href="{% url 'reservas_update' r.pk %}" class="btn btn-sm btn-secondary">Editar</a>
+            <a href="{% url 'reservas_delete' r.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8">No hay reservas aún.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

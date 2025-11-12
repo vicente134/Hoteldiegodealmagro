@@ -1,6 +1,9 @@
 # gestion_usuarios/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.urls import reverse
 
 # --- Este es el decorador para tu RBAC (Control de Acceso Basado en Roles) ---
 # Revisa el campo 'rol' de tu modelo 'Usuarios'
@@ -29,6 +32,23 @@ def role_required(allowed_roles=[]):
 def dashboard_view(request):
     # request.user contiene el usuario logueado (de tu tabla 'usuarios')
     return render(request, 'dashboard.html')
+
+
+def login_view(request):
+    # Vista de login personalizada (opcional)
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return redirect(reverse('dashboard'))
+            else:
+                messages.error(request, 'Usuario no activo.')
+        else:
+            messages.error(request, 'Usuario o contraseña incorrectos.')
+    return render(request, 'login.html')
 
 
 # --- Ejemplo de una vista protegida por RBAC ---

@@ -11,8 +11,8 @@
   <h3>Accesos Rápidos</h3>
   
   <div class="list-group">
-    <a href="#" class="list-group-item list-group-item-action">Ver Reservas</a>
-    <a href="#" class="list-group-item list-group-item-action">Ver Clientes</a>
+    <a href="{% url 'reservas_list' %}" class="list-group-item list-group-item-action">Ver Reservas</a>
+    <a href="{% url 'clientes_list' %}" class="list-group-item list-group-item-action">Ver Clientes</a>
 
     {% if user.rol == 'gerente' or user.rol == 'administrador' %}
       <a href="#" class="list-group-item list-group-item-action list-group-item-info">
