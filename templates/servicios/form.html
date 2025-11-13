@@ -1,13 +1,232 @@
 {% extends 'base.html' %}
 
-{% block title %}Formulario Servicio{% endblock %}
+{% block title %}{% if object %}Editar{% else %}Crear{% endif %} Servicio{% endblock %}
 
 {% block content %}
-  <h1>{% if object %}Editar{% else %}Crear{% endif %} Servicio</h1>
+<style>
+  .form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .form-section h3 {
+    color: #1e40af;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #dbeafe;
+  }
+  
+  .help-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+  }
+  
+  .error-message {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  
+  .status-toggle {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+  
+  .status-toggle input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+  
+  .service-examples {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .service-example-card {
+    background: linear-gradient(135deg, #f0f9ff, #faf5ff);
+    border: 2px solid #dbeafe;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .service-example-card i {
+    font-size: 2rem;
+    color: #1e40af;
+    margin-bottom: 0.5rem;
+  }
+  
+  .service-example-card h5 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+  }
+</style>
+
+<div class="card">
+  <div class="card-header">
+    <i class="fas fa-concierge-bell"></i>
+    {% if object %}Editar Servicio{% else %}Nuevo Servicio{% endif %}
+  </div>
+
+  {% if form.non_field_errors %}
+  <div class="error-message">
+    <i class="fas fa-exclamation-circle"></i>
+    {% for error in form.non_field_errors %}
+      {{ error }}
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary" type="submit">Guardar</button>
-    <a href="{% url 'servicios_list' %}" class="btn btn-secondary">Volver</a>
+
+    <!-- Sección Información del Servicio -->
+    <div class="form-section">
+      <h3><i class="fas fa-info-circle"></i> Información del Servicio</h3>
+      
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <label for="id_nombre" class="form-label">Nombre del Servicio *</label>
+          {{ form.nombre }}
+          <div class="help-text">
+            <i class="fas fa-tag"></i>
+            Nombre descriptivo del servicio (ej: Desayuno buffet, Spa, Lavandería).
+          </div>
+          {% if form.nombre.errors %}
+            <div class="text-danger">{{ form.nombre.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-12 mb-3">
+          <label for="id_descripcion" class="form-label">Descripción</label>
+          {{ form.descripcion }}
+          <div class="help-text">
+            <i class="fas fa-align-left"></i>
+            Descripción detallada del servicio que se ofrece.
+          </div>
+          {% if form.descripcion.errors %}
+            <div class="text-danger">{{ form.descripcion.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Ejemplos de servicios -->
+      <div class="alert" style="background: linear-gradient(135deg, #f0f9ff, #faf5ff); border: 1px solid #dbeafe;">
+        <h6 style="color: #1e40af; font-weight: 700; margin-bottom: 1rem;">
+          <i class="fas fa-lightbulb"></i>
+          Ejemplos de Servicios Hoteleros
+        </h6>
+        <div class="service-examples">
+          <div class="service-example-card">
+            <i class="fas fa-utensils"></i>
+            <h5>Desayuno</h5>
+          </div>
+          <div class="service-example-card">
+            <i class="fas fa-spa"></i>
+            <h5>Spa</h5>
+          </div>
+          <div class="service-example-card">
+            <i class="fas fa-tshirt"></i>
+            <h5>Lavandería</h5>
+          </div>
+          <div class="service-example-card">
+            <i class="fas fa-wifi"></i>
+            <h5>WiFi Premium</h5>
+          </div>
+          <div class="service-example-card">
+            <i class="fas fa-car"></i>
+            <h5>Estacionamiento</h5>
+          </div>
+          <div class="service-example-card">
+            <i class="fas fa-dumbbell"></i>
+            <h5>Gimnasio</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Precio -->
+    <div class="form-section">
+      <h3><i class="fas fa-dollar-sign"></i> Precio del Servicio</h3>
+      
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <label for="id_precio" class="form-label">Precio *</label>
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            {{ form.precio }}
+          </div>
+          <div class="help-text">
+            <i class="fas fa-money-bill-wave"></i>
+            Precio del servicio en pesos chilenos.
+          </div>
+          {% if form.precio.errors %}
+            <div class="text-danger">{{ form.precio.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Estado -->
+    <div class="form-section">
+      <h3><i class="fas fa-toggle-on"></i> Disponibilidad</h3>
+      
+      <div class="status-toggle">
+        {{ form.activo }}
+        <label for="id_activo" class="form-label mb-0">
+          <strong>Servicio Activo</strong>
+          <div class="help-text" style="margin-top: 0.25rem;">
+            <i class="fas fa-info-circle"></i>
+            Si está marcado, el servicio estará disponible para las reservas.
+          </div>
+        </label>
+      </div>
+      {% if form.activo.errors %}
+        <div class="text-danger mt-2">{{ form.activo.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="d-flex gap-2 justify-content-end">
+      <a href="{% url 'servicios_list' %}" class="btn btn-secondary">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </a>
+      <button class="btn btn-primary" type="submit">
+        <i class="fas fa-save"></i>
+        Guardar Servicio
+      </button>
+    </div>
   </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Agregar clases Bootstrap a los campos del formulario
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], select, textarea');
+    inputs.forEach(input => {
+      if (!input.classList.contains('form-control')) {
+        input.classList.add('form-control');
+      }
+    });
+  });
+</script>
 {% endblock %}

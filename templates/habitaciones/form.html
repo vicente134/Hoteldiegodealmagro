@@ -1,13 +1,188 @@
 {% extends 'base.html' %}
 
-{% block title %}Formulario Habitación{% endblock %}
+{% block title %}{% if object %}Editar{% else %}Crear{% endif %} Habitación{% endblock %}
 
 {% block content %}
-  <h1>{% if object %}Editar{% else %}Crear{% endif %} Habitación</h1>
+<style>
+  .form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .form-section h3 {
+    color: #1e40af;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #dbeafe;
+  }
+  
+  .help-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+  }
+  
+  .error-message {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+</style>
+
+<div class="card">
+  <div class="card-header">
+    <i class="fas fa-bed"></i>
+    {% if object %}Editar Habitación{% else %}Nueva Habitación{% endif %}
+  </div>
+
+  {% if form.non_field_errors %}
+  <div class="error-message">
+    <i class="fas fa-exclamation-circle"></i>
+    {% for error in form.non_field_errors %}
+      {{ error }}
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary" type="submit">Guardar</button>
-    <a href="{% url 'habitaciones_list' %}" class="btn btn-secondary">Volver</a>
+
+    <!-- Sección Información básica -->
+    <div class="form-section">
+      <h3><i class="fas fa-info-circle"></i> Información Básica</h3>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="id_numero" class="form-label">Número de Habitación *</label>
+          {{ form.numero }}
+          <div class="help-text">
+            <i class="fas fa-hashtag"></i>
+            Número único identificador de la habitación.
+          </div>
+          {% if form.numero.errors %}
+            <div class="text-danger">{{ form.numero.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="id_piso" class="form-label">Piso</label>
+          {{ form.piso }}
+          <div class="help-text">
+            <i class="fas fa-building"></i>
+            Piso donde se encuentra la habitación.
+          </div>
+          {% if form.piso.errors %}
+            <div class="text-danger">{{ form.piso.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Características -->
+    <div class="form-section">
+      <h3><i class="fas fa-star"></i> Características</h3>
+      
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="id_tipo" class="form-label">Tipo de Habitación *</label>
+          {{ form.tipo }}
+          <div class="help-text">
+            <i class="fas fa-tag"></i>
+            Categoría de la habitación.
+          </div>
+          {% if form.tipo.errors %}
+            <div class="text-danger">{{ form.tipo.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="id_capacidad" class="form-label">Capacidad *</label>
+          {{ form.capacidad }}
+          <div class="help-text">
+            <i class="fas fa-users"></i>
+            Número máximo de personas.
+          </div>
+          {% if form.capacidad.errors %}
+            <div class="text-danger">{{ form.capacidad.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="id_estado" class="form-label">Estado *</label>
+          {{ form.estado }}
+          <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Estado actual de la habitación.
+          </div>
+          {% if form.estado.errors %}
+            <div class="text-danger">{{ form.estado.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Precio y Descripción -->
+    <div class="form-section">
+      <h3><i class="fas fa-dollar-sign"></i> Precio y Detalles</h3>
+      
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <label for="id_precio_noche" class="form-label">Precio por Noche *</label>
+          {{ form.precio_noche }}
+          <div class="help-text">
+            <i class="fas fa-money-bill-wave"></i>
+            Precio en pesos chilenos por noche.
+          </div>
+          {% if form.precio_noche.errors %}
+            <div class="text-danger">{{ form.precio_noche.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-12 mb-3">
+          <label for="id_descripcion" class="form-label">Descripción</label>
+          {{ form.descripcion }}
+          <div class="help-text">
+            <i class="fas fa-align-left"></i>
+            Descripción detallada de la habitación y sus amenidades.
+          </div>
+          {% if form.descripcion.errors %}
+            <div class="text-danger">{{ form.descripcion.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="d-flex gap-2 justify-content-end">
+      <a href="{% url 'habitaciones_list' %}" class="btn btn-secondary">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </a>
+      <button class="btn btn-primary" type="submit">
+        <i class="fas fa-save"></i>
+        Guardar Habitación
+      </button>
+    </div>
   </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Agregar clases Bootstrap a los campos del formulario
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], select, textarea');
+    inputs.forEach(input => {
+      if (!input.classList.contains('form-control')) {
+        input.classList.add('form-control');
+      }
+    });
+  });
+</script>
 {% endblock %}

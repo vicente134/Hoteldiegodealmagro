@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
+from django.contrib import messages
 
 from .models import Habitaciones
 from gestion_usuarios.views import role_required
@@ -113,63 +114,76 @@ class ReservasCreateView(LoginRequiredMixin, generic.CreateView):
 			reservahabitacion__id_habitacion=habitacion,
 			fecha_checkin__lt=end_date,
 			fecha_checkout__gt=start_date,
-		).distinct()
+		).exclude(estado__in=['cancelada', 'completada']).distinct()
 		return not overlapping.exists()
 
 	@transaction.atomic
 	def form_valid(self, form):
-		# Validaciones y asignación de habitaciones y servicios
-		reserva = form.save(commit=False)
-		reserva.id_usuario = self.request.user
-		reserva.codigo_reserva = f'RES-{uuid.uuid4().hex[:8].upper()}'
-		reserva.fecha_creacion = timezone.now()
+		try:
+			# Validaciones y asignación de habitaciones y servicios
+			reserva = form.save(commit=False)
+			reserva.id_usuario = self.request.user
+			reserva.codigo_reserva = f'RES-{uuid.uuid4().hex[:8].upper()}'
+			reserva.fecha_creacion = timezone.now()
+			reserva.estado = 'pendiente'  # Estado inicial
 
-		start = form.cleaned_data['fecha_checkin']
-		end = form.cleaned_data['fecha_checkout']
-		habitaciones = form.cleaned_data['habitaciones']
-		servicios = form.cleaned_data.get('servicios')
+			start = form.cleaned_data['fecha_checkin']
+			end = form.cleaned_data['fecha_checkout']
+			habitaciones = form.cleaned_data.get('habitaciones', [])
+			servicios = form.cleaned_data.get('servicios', [])
 
-		# Validar disponibilidad
-		for h in habitaciones:
-			if not self._room_available(h, start, end):
-				form.add_error('habitaciones', f'La habitación {h.numero} no está disponible en esas fechas.')
+			# Validar que se hayan seleccionado habitaciones
+			if not habitaciones:
+				messages.error(self.request, 'Debes seleccionar al menos una habitación.')
 				return self.form_invalid(form)
 
-		# Guardar reserva
-		reserva.save()
+			# Validar disponibilidad
+			for h in habitaciones:
+				if not self._room_available(h, start, end):
+					messages.error(self.request, f'La habitación {h.numero} no está disponible en esas fechas.')
+					return self.form_invalid(form)
 
-		total = 0
-		nights = (end - start).days
-		if nights <= 0:
-			nights = 1
+			# Guardar reserva primero
+			reserva.save()
 
-		# Crear relaciones ReservaHabitacion y sumar precios
-		for h in habitaciones:
-			ReservaHabitacion.objects.create(
-				id_reserva=reserva,
-				id_habitacion=h,
-				precio_noche=h.precio_noche,
-				estado_asignacion='activa'
-			)
-			total += (h.precio_noche or 0) * nights
+			total = 0
+			nights = (end - start).days
+			if nights <= 0:
+				nights = 1
 
-		# Servicios
-		if servicios:
-			for s in servicios:
-				# Cantidad por defecto 1
-				ReservaServicio.objects.create(
+			# Crear relaciones ReservaHabitacion y sumar precios
+			for h in habitaciones:
+				ReservaHabitacion.objects.create(
 					id_reserva=reserva,
-					id_servicio=s,
-					cantidad=1,
-					precio_unitario=s.precio,
-					total=s.precio
+					id_habitacion=h,
+					precio_noche=h.precio_noche,
+					estado_asignacion='activa'
 				)
-				total += s.precio
+				total += (h.precio_noche or 0) * nights
 
-		reserva.total_estimado = total
-		reserva.save()
+			# Servicios
+			if servicios:
+				for s in servicios:
+					# Cantidad por defecto 1
+					ReservaServicio.objects.create(
+						id_reserva=reserva,
+						id_servicio=s,
+						cantidad=1,
+						precio_unitario=s.precio,
+						total=s.precio
+					)
+					total += s.precio
 
-		return super().form_valid(form)
+			# Actualizar el total estimado
+			reserva.total_estimado = total
+			reserva.save()
+
+			messages.success(self.request, f'Reserva {reserva.codigo_reserva} creada exitosamente.')
+			return redirect(self.success_url)
+
+		except Exception as e:
+			messages.error(self.request, f'Error al crear la reserva: {str(e)}')
+			return self.form_invalid(form)
 
 
 @method_decorator(role_required(allowed_roles=['administrador', 'recepcionista']), name='dispatch')

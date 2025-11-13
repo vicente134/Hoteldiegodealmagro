@@ -1,56 +1,270 @@
 {% extends 'base.html' %}
 
-{% block title %}Formulario Reserva{% endblock %}
+{% block title %}{% if object %}Editar{% else %}Crear{% endif %} Reserva{% endblock %}
 
 {% block content %}
-  <h1>{% if object %}Editar{% else %}Crear{% endif %} Reserva</h1>
+<style>
+  .form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .form-section h3 {
+    color: #1e40af;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #dbeafe;
+  }
+  
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  .checkbox-item {
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .checkbox-item:has(input:checked) {
+    border-color: #1e40af;
+    background: linear-gradient(135deg, rgba(30, 64, 175, 0.05), rgba(124, 58, 237, 0.05));
+  }
+  
+  .checkbox-item:hover {
+    border-color: #9ca3af;
+  }
+  
+  .checkbox-item label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    margin: 0;
+  }
+  
+  .checkbox-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+  
+  .help-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+  }
+  
+  .error-message {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+</style>
+
+<div class="card">
+  <div class="card-header">
+    <i class="fas fa-calendar-plus"></i>
+    {% if object %}Editar Reserva{% else %}Nueva Reserva{% endif %}
+  </div>
+
+  {% if form.non_field_errors %}
+  <div class="error-message">
+    <i class="fas fa-exclamation-circle"></i>
+    {% for error in form.non_field_errors %}
+      {{ error }}
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <form method="post">
     {% csrf_token %}
 
-    <div class="mb-3">
-      <label for="id_rut_cliente" class="form-label">Buscar cliente por RUT</label>
-      <input list="ruts" name="rut_cliente" id="id_rut_cliente" class="form-control" value="{{ form.rut_cliente.value|default_if_none:'' }}">
-      <datalist id="ruts">
-        {% for r in clientes_ruts %}
-          <option value="{{ r }}"></option>
+    <!-- Sección Cliente -->
+    <div class="form-section">
+      <h3><i class="fas fa-user"></i> Información del Cliente</h3>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="id_rut_cliente" class="form-label">Buscar por RUT</label>
+          <input 
+            list="ruts" 
+            name="rut_cliente" 
+            id="id_rut_cliente" 
+            class="form-control" 
+            value="{{ form.rut_cliente.value|default_if_none:'' }}"
+            placeholder="Ej: 12345678-9">
+          <datalist id="ruts">
+            {% for r in clientes_ruts %}
+              <option value="{{ r }}"></option>
+            {% endfor %}
+          </datalist>
+          <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Si el RUT existe en el sistema, el cliente será asignado automáticamente.
+          </div>
+          {% if form.rut_cliente.errors %}
+            <div class="text-danger">{{ form.rut_cliente.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="id_id_cliente" class="form-label">O selecciona un cliente</label>
+          {{ form.id_cliente }}
+          <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Selecciona directamente de la lista de clientes.
+          </div>
+          {% if form.id_cliente.errors %}
+            <div class="text-danger">{{ form.id_cliente.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Fechas -->
+    <div class="form-section">
+      <h3><i class="fas fa-calendar"></i> Fechas de Estadía</h3>
+      
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="id_fecha_checkin" class="form-label">Fecha de Check-in *</label>
+          {{ form.fecha_checkin }}
+          {% if form.fecha_checkin.errors %}
+            <div class="text-danger">{{ form.fecha_checkin.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="id_fecha_checkout" class="form-label">Fecha de Check-out *</label>
+          {{ form.fecha_checkout }}
+          {% if form.fecha_checkout.errors %}
+            <div class="text-danger">{{ form.fecha_checkout.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="id_cantidad_personas" class="form-label">Cantidad de Personas *</label>
+          {{ form.cantidad_personas }}
+          {% if form.cantidad_personas.errors %}
+            <div class="text-danger">{{ form.cantidad_personas.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Habitaciones -->
+    <div class="form-section">
+      <h3><i class="fas fa-bed"></i> Habitaciones *</h3>
+      <div class="help-text mb-3">
+        <i class="fas fa-info-circle"></i>
+        Selecciona una o más habitaciones para la reserva. Solo se muestran habitaciones disponibles.
+      </div>
+      
+      <div class="checkbox-grid">
+        {% for checkbox in form.habitaciones %}
+          <div class="checkbox-item">
+            {{ checkbox }}
+          </div>
         {% endfor %}
-      </datalist>
-      <div class="form-text">Si el RUT coincide con un cliente existente será asignado automáticamente.</div>
+      </div>
+      
+      {% if form.habitaciones.errors %}
+        <div class="text-danger mt-2">{{ form.habitaciones.errors }}</div>
+      {% endif %}
     </div>
 
-    {{ form.id_cliente }}
-
-    <div class="mb-3">
-      <label for="id_fecha_checkin" class="form-label">Fecha check-in</label>
-      {{ form.fecha_checkin }}
+    <!-- Sección Servicios -->
+    <div class="form-section">
+      <h3><i class="fas fa-concierge-bell"></i> Servicios Adicionales (Opcional)</h3>
+      <div class="help-text mb-3">
+        <i class="fas fa-info-circle"></i>
+        Selecciona los servicios adicionales que desees incluir en la reserva.
+      </div>
+      
+      {% if form.servicios %}
+      <div class="checkbox-grid">
+        {% for checkbox in form.servicios %}
+          <div class="checkbox-item">
+            {{ checkbox }}
+          </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        No hay servicios adicionales disponibles en este momento.
+      </div>
+      {% endif %}
+      
+      {% if form.servicios.errors %}
+        <div class="text-danger mt-2">{{ form.servicios.errors }}</div>
+      {% endif %}
     </div>
 
-    <div class="mb-3">
-      <label for="id_fecha_checkout" class="form-label">Fecha check-out</label>
-      {{ form.fecha_checkout }}
+    <!-- Sección Comentarios -->
+    <div class="form-section">
+      <h3><i class="fas fa-comment"></i> Comentarios</h3>
+      
+      <div class="mb-3">
+        <label for="id_comentarios" class="form-label">Observaciones o comentarios adicionales</label>
+        {{ form.comentarios }}
+        <div class="help-text">
+          <i class="fas fa-info-circle"></i>
+          Agrega cualquier información adicional sobre la reserva.
+        </div>
+        {% if form.comentarios.errors %}
+          <div class="text-danger">{{ form.comentarios.errors }}</div>
+        {% endif %}
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="id_cantidad_personas" class="form-label">Cantidad de personas</label>
-      {{ form.cantidad_personas }}
+    <!-- Botones de acción -->
+    <div class="d-flex gap-2 justify-content-end">
+      <a href="{% url 'reservas_list' %}" class="btn btn-secondary">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </a>
+      <button class="btn btn-primary" type="submit">
+        <i class="fas fa-save"></i>
+        Guardar Reserva
+      </button>
     </div>
-
-    <div class="mb-3">
-      <label class="form-label">Habitaciones</label>
-      {{ form.habitaciones }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Servicios (opcional)</label>
-      {{ form.servicios }}
-    </div>
-
-    <div class="mb-3">
-      <label for="id_comentarios" class="form-label">Comentarios</label>
-      {{ form.comentarios }}
-    </div>
-
-    <button class="btn btn-primary" type="submit">Guardar</button>
-    <a href="{% url 'reservas_list' %}" class="btn btn-secondary">Volver</a>
   </form>
+</div>
+
+<script>
+  // Sincronizar RUT con selector de cliente
+  document.addEventListener('DOMContentLoaded', function() {
+    const rutInput = document.getElementById('id_rut_cliente');
+    const clienteSelect = document.getElementById('id_id_cliente');
+    
+    if (rutInput && clienteSelect) {
+      rutInput.addEventListener('change', function() {
+        // Si se ingresa un RUT, limpiar la selección manual
+        if (this.value.trim()) {
+          clienteSelect.value = '';
+        }
+      });
+      
+      clienteSelect.addEventListener('change', function() {
+        // Si se selecciona un cliente, limpiar el RUT
+        if (this.value) {
+          rutInput.value = '';
+        }
+      });
+    }
+  });
+</script>
 {% endblock %}

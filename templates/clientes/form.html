@@ -1,13 +1,203 @@
 {% extends 'base.html' %}
 
-{% block title %}Formulario Cliente{% endblock %}
+{% block title %}{% if object %}Editar{% else %}Crear{% endif %} Cliente{% endblock %}
 
 {% block content %}
-  <h1>{% if object %}Editar{% else %}Crear{% endif %} Cliente</h1>
+<style>
+  .form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .form-section h3 {
+    color: #1e40af;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #dbeafe;
+  }
+  
+  .help-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+  }
+  
+  .error-message {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  
+  .status-toggle {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+  
+  .status-toggle input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+</style>
+
+<div class="card">
+  <div class="card-header">
+    <i class="fas fa-user"></i>
+    {% if object %}Editar Cliente{% else %}Nuevo Cliente{% endif %}
+  </div>
+
+  {% if form.non_field_errors %}
+  <div class="error-message">
+    <i class="fas fa-exclamation-circle"></i>
+    {% for error in form.non_field_errors %}
+      {{ error }}
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary" type="submit">Guardar</button>
-    <a href="{% url 'clientes_list' %}" class="btn btn-secondary">Volver</a>
+
+    <!-- Sección Información Personal -->
+    <div class="form-section">
+      <h3><i class="fas fa-id-card"></i> Información Personal</h3>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="id_rut" class="form-label">RUT *</label>
+          {{ form.rut }}
+          <div class="help-text">
+            <i class="fas fa-fingerprint"></i>
+            RUT del cliente (formato: 12345678-9).
+          </div>
+          {% if form.rut.errors %}
+            <div class="text-danger">{{ form.rut.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="id_nombre" class="form-label">Nombre Completo *</label>
+          {{ form.nombre }}
+          <div class="help-text">
+            <i class="fas fa-user-circle"></i>
+            Nombre y apellidos del cliente.
+          </div>
+          {% if form.nombre.errors %}
+            <div class="text-danger">{{ form.nombre.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Información de Contacto -->
+    <div class="form-section">
+      <h3><i class="fas fa-phone"></i> Información de Contacto</h3>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="id_correo" class="form-label">Correo Electrónico</label>
+          {{ form.correo }}
+          <div class="help-text">
+            <i class="fas fa-envelope"></i>
+            Dirección de correo electrónico.
+          </div>
+          {% if form.correo.errors %}
+            <div class="text-danger">{{ form.correo.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="id_telefono" class="form-label">Teléfono</label>
+          {{ form.telefono }}
+          <div class="help-text">
+            <i class="fas fa-mobile-alt"></i>
+            Número de contacto (formato: +56 9 1234 5678).
+          </div>
+          {% if form.telefono.errors %}
+            <div class="text-danger">{{ form.telefono.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-12 mb-3">
+          <label for="id_direccion" class="form-label">Dirección</label>
+          {{ form.direccion }}
+          <div class="help-text">
+            <i class="fas fa-map-marker-alt"></i>
+            Dirección completa del cliente.
+          </div>
+          {% if form.direccion.errors %}
+            <div class="text-danger">{{ form.direccion.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Estado -->
+    <div class="form-section">
+      <h3><i class="fas fa-toggle-on"></i> Estado del Cliente</h3>
+      
+      <div class="status-toggle">
+        {{ form.activo }}
+        <label for="id_activo" class="form-label mb-0">
+          <strong>Cliente Activo</strong>
+          <div class="help-text" style="margin-top: 0.25rem;">
+            <i class="fas fa-info-circle"></i>
+            Si está marcado, el cliente puede realizar reservas.
+          </div>
+        </label>
+      </div>
+      {% if form.activo.errors %}
+        <div class="text-danger mt-2">{{ form.activo.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="d-flex gap-2 justify-content-end">
+      <a href="{% url 'clientes_list' %}" class="btn btn-secondary">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </a>
+      <button class="btn btn-primary" type="submit">
+        <i class="fas fa-save"></i>
+        Guardar Cliente
+      </button>
+    </div>
   </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Agregar clases Bootstrap a los campos del formulario
+    const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], select, textarea');
+    inputs.forEach(input => {
+      if (!input.classList.contains('form-control')) {
+        input.classList.add('form-control');
+      }
+    });
+    
+    // Formatear RUT automáticamente
+    const rutInput = document.getElementById('id_rut');
+    if (rutInput) {
+      rutInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/[^0-9kK]/g, '');
+        if (value.length > 1) {
+          value = value.slice(0, -1) + '-' + value.slice(-1);
+        }
+        e.target.value = value;
+      });
+    }
+  });
+</script>
 {% endblock %}
