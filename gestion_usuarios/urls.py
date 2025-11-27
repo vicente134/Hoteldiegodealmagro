@@ -1,5 +1,7 @@
 # gestion_usuarios/urls.py
 from django.urls import path
+# gestion_usuarios/urls.py
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -8,4 +10,8 @@ urlpatterns = [
     
     # Ejemplo de la ruta protegida por RBAC
     path('reportes/', views.vista_reportes_gerencia, name='reportes_gerencia'),
+    
+    # Administración de Usuarios
+    path('usuarios/', views.lista_usuarios, name='lista_usuarios'),
+    path('usuarios/editar/<int:user_id>/', views.editar_usuario, name='editar_usuario'),
 ]

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Administrar Usuarios{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-primary">
+            <i class="fas fa-users-cog me-2"></i>Administración de Usuarios
+        </h2>
+        <p class="text-muted">Gestiona los usuarios del sistema, sus roles y estados.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <!-- Podríamos agregar un botón para crear usuario aquí en el futuro -->
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Usuario</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Último Acceso</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-3 bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;">
+                                    {{ usuario.nombre_usuario|slice:":2"|upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ usuario.nombre_completo|default:usuario.nombre_usuario }}</div>
+                                    <div class="small text-muted">{{ usuario.correo }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill 
+                                {% if usuario.rol == 'administrador' %}bg-danger
+                                {% elif usuario.rol == 'gerente' %}bg-warning text-dark
+                                {% elif usuario.rol == 'recepcionista' %}bg-info text-dark
+                                {% else %}bg-secondary{% endif %}">
+                                {{ usuario.get_rol_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if usuario.activo %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                    <i class="fas fa-check-circle me-1"></i>Activo
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
+                                    <i class="fas fa-times-circle me-1"></i>Inactivo
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">
+                            {% if usuario.ultimo_acceso %}
+                                {{ usuario.ultimo_acceso|date:"d M Y, H:i" }}
+                            {% else %}
+                                <span class="fst-italic">Nunca</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'editar_usuario' usuario.id_usuario %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i>Editar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fas fa-users fa-3x mb-3 opacity-25"></i>
+                            <p>No hay usuarios registrados.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

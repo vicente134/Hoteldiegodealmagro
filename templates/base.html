@@ -118,24 +118,6 @@
       </a>
       
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto">
-          {% if user.is_authenticated %}
-            <li class="nav-item">
-              <a class="nav-link nav-link-custom" href="{% url 'dashboard' %}">
-                <i class="fas fa-home"></i>
-                Dashboard
-              </a>
-            </li>
-            
-            <li class="nav-item dropdown">
-              <a class="nav-link nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                <i class="fas fa-calendar-check"></i>
-                Reservas
-              </a>
               <ul class="dropdown-menu dropdown-menu-custom">
                 <li>
                   <a class="dropdown-item dropdown-item-custom" href="{% url 'reservas_index' %}">

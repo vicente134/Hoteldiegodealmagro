@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'lista_usuarios' %}" class="btn btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h2 class="fw-bold text-primary mb-0">Editar Usuario</h2>
+        </div>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="avatar-circle mx-auto mb-3 bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; border-radius: 50%; font-size: 2rem;">
+                        {{ usuario.nombre_usuario|slice:":2"|upper }}
+                    </div>
+                    <h4 class="fw-bold">{{ usuario.nombre_completo|default:usuario.nombre_usuario }}</h4>
+                    <p class="text-muted">{{ usuario.correo }}</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="rol" class="form-label fw-bold text-secondary">Rol del Usuario</label>
+                        <select class="form-select form-select-lg" id="rol" name="rol">
+                            {% for codigo, nombre in usuario.ROL_CHOICES %}
+                                <option value="{{ codigo }}" {% if usuario.rol == codigo %}selected{% endif %}>
+                                    {{ nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">El rol define los permisos y accesos del usuario en el sistema.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="activo" name="activo" {% if usuario.activo %}checked{% endif %}>
+                            <label class="form-check-label fw-bold text-secondary" for="activo">Usuario Activo</label>
+                        </div>
+                        <div class="form-text">Desactivar un usuario le impedirá iniciar sesión en el sistema.</div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                        <a href="{% url 'lista_usuarios' %}" class="btn btn-light btn-lg text-muted">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
