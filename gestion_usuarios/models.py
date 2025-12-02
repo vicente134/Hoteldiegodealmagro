@@ -66,6 +66,7 @@ class Usuarios(AbstractBaseUser, PermissionsMixin):
     
     ultimo_acceso = models.DateTimeField(blank=True, null=True)
     activo = models.BooleanField(default=True) 
+    intentos_fallidos = models.IntegerField(default=0)
     fecha_creacion = models.DateTimeField(auto_now_add=True) # Django maneja la fecha
 
     # --- Campos requeridos por Django Auth ---

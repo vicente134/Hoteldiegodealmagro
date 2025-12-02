@@ -92,15 +92,42 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        
+        # Primero buscamos el usuario para gestionar intentos fallidos
+        try:
+            usuario_obj = Usuarios.objects.get(nombre_usuario=username)
+        except Usuarios.DoesNotExist:
+            usuario_obj = None
+
+        if usuario_obj and not usuario_obj.activo:
+             messages.error(request, 'Cuenta bloqueada o inactiva. Contacte al administrador.')
+             return render(request, 'login.html')
+
         user = authenticate(request, username=username, password=password)
+        
         if user is not None:
             if user.is_active:
+                # Login exitoso, reseteamos contador
+                user.intentos_fallidos = 0
+                user.save()
                 login(request, user)
                 return redirect(reverse('dashboard'))
             else:
                 messages.error(request, 'Usuario no activo.')
         else:
-            messages.error(request, 'Usuario o contraseña incorrectos.')
+            # Login fallido
+            if usuario_obj:
+                usuario_obj.intentos_fallidos += 1
+                if usuario_obj.intentos_fallidos >= 3:
+                    usuario_obj.activo = False
+                    usuario_obj.save()
+                    messages.error(request, 'Cuenta bloqueada por múltiples intentos fallidos.')
+                else:
+                    usuario_obj.save()
+                    messages.error(request, f'Usuario o contraseña incorrectos. Intentos restantes: {3 - usuario_obj.intentos_fallidos}')
+            else:
+                messages.error(request, 'Usuario o contraseña incorrectos.')
+                
     return render(request, 'login.html')
 
 
@@ -148,3 +175,19 @@ def editar_usuario(request, user_id):
              return redirect('lista_usuarios')
 
     return render(request, 'gestion_usuarios/editar_usuario.html', {'usuario': usuario_editar})
+
+from .forms import UsuarioCreationForm
+
+@login_required
+@role_required(allowed_roles=['administrador'])
+def crear_usuario(request):
+    if request.method == 'POST':
+        form = UsuarioCreationForm(request.POST)
+        if form.is_valid():
+            nuevo_usuario = form.save()
+            messages.success(request, f'Usuario {nuevo_usuario.nombre_usuario} creado correctamente.')
+            return redirect('lista_usuarios')
+    else:
+        form = UsuarioCreationForm()
+    
+    return render(request, 'gestion_usuarios/crear_usuario.html', {'form': form})

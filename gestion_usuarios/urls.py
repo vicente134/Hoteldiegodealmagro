@@ -1,7 +1,5 @@
 # gestion_usuarios/urls.py
 from django.urls import path
-# gestion_usuarios/urls.py
-from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -14,4 +12,5 @@ urlpatterns = [
     # Administración de Usuarios
     path('usuarios/', views.lista_usuarios, name='lista_usuarios'),
     path('usuarios/editar/<int:user_id>/', views.editar_usuario, name='editar_usuario'),
+    path('usuarios/crear/', views.crear_usuario, name='crear_usuario'),
 ]
