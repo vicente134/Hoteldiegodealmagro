@@ -152,10 +152,16 @@
             75% { transform: translateX(10px); }
         }
 
-        .alert-danger {
+        .alert-danger, .alert-error {
             background: linear-gradient(135deg, #fee2e2, #fecaca);
             color: #991b1b;
             border: 2px solid #fca5a5;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #166534;
+            border: 2px solid #86efac;
         }
 
         .login-form {
@@ -310,14 +316,15 @@
                 <p class="subtitle">Sistema de Gestión Hotelera</p>
             </div>
 
-            {% if form.errors %}
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle" style="font-size: 1.25rem;"></i>
-                <div>
-                    <strong>Error de autenticación</strong>
-                    <br>Tu usuario o contraseña son incorrectos
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas fa-exclamation-circle" style="font-size: 1.25rem;"></i>
+                    <div>
+                        {{ message }}
+                    </div>
                 </div>
-            </div>
+                {% endfor %}
             {% endif %}
 
             <form method="post" class="login-form">
